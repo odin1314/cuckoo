@@ -31,7 +31,9 @@ def process(task_id, target=None, copy_path=None, report=False, auto=False):
 
     if report:
         RunReporting(task_id=task_id, results=results).run()
-        Database().set_status(task_id, TASK_REPORTED)
+        try: Database().set_status(task_id, TASK_REPORTED)
+        except AttributeError:
+            log.critical("Could not set Task status to TASK_REPORTED for ID %u", task_id)
 
         if auto:
             if cfg.cuckoo.delete_original and os.path.exists(target):
