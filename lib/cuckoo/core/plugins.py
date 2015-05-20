@@ -139,7 +139,8 @@ class RunProcessing(object):
 
     def __init__(self, task_id):
         """@param task_id: ID of the analyses to process."""
-        self.task = Database().view_task(task_id).to_dict()
+        tmp = Database().view_task(task_id)
+        self.task = tmp.to_dict() if tmp else {"id": task_id, "category": "unknown"}
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config("processing")
 
@@ -460,7 +461,8 @@ class RunReporting:
 
     def __init__(self, task_id, results):
         """@param analysis_path: analysis folder path."""
-        self.task = Database().view_task(task_id).to_dict()
+        tmp = Database().view_task(task_id)
+        self.task = tmp.to_dict() if tmp else {"id": task_id, "category": "unknown"}
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config("reporting")
