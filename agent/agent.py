@@ -48,7 +48,7 @@ class Agent:
                 system_drive = os.environ["SYSTEMDRIVE"] + os.sep
                 ANALYZER_FOLDER = os.path.join(system_drive, container)
             elif self.system == "linux" or self.system == "darwin":
-                ANALYZER_FOLDER = os.path.join(os.environ["HOME"], container)
+                ANALYZER_FOLDER = os.path.join(os.environ.get("HOME", "./"), container)
             else:
                 ERROR_MESSAGE = "Unable to identify operating system"
                 return False
