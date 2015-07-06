@@ -81,8 +81,7 @@ class Sniffer(Auxiliary):
             pargs.extend(["and", bpf])
 
         try:
-            self.proc = subprocess.Popen(pargs, stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
+            self.proc = subprocess.Popen(pargs)
         except (OSError, ValueError):
             log.exception("Failed to start sniffer (interface=%s, host=%s, "
                           "dump path=%s)", interface, host, file_path)

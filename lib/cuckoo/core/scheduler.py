@@ -212,6 +212,12 @@ class AnalysisManager(Thread):
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
 
+        # copy in other analyzer specific options, TEMPORARY (most likely)
+        vm_options = getattr(machinery.options, self.machine.name)
+        for k in vm_options:
+            if k.startswith("analyzer_"):
+                options[k] = vm_options[k]
+
         return options
 
     def launch_analysis(self):
