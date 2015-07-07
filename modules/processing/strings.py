@@ -10,12 +10,12 @@ from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 class Strings(Processing):
     """Extract strings from analyzed file."""
+    key = "strings"
 
     def run(self):
         """Run extract of printable strings.
         @return: list of printable strings.
         """
-        self.key = "strings"
         strings = []
 
         if self.task["category"] == "file":

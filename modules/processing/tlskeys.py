@@ -9,7 +9,7 @@ from lib.cuckoo.common.abstracts import Processing
 class TLSMasterKeys(Processing):
     """Cross-references master keys extracted from the monitor and key
     information extracted from the PCAP to dump a master key file."""
-
+    key = "tlskeys"
     order = 2
 
     def run(self):

@@ -622,10 +622,9 @@ class Pcap:
 
 class NetworkAnalysis(Processing):
     """Network analysis."""
+    key = "network"
 
     def run(self):
-        self.key = "network"
-
         if not IS_DPKT:
             log.error("Python DPKT is not installed, aborting PCAP analysis.")
             return {}

@@ -9,12 +9,12 @@ from lib.cuckoo.common.objects import File
 
 class Dropped(Processing):
     """Dropped files analysis."""
+    key = "dropped"
 
     def run(self):
         """Run analysis.
         @return: list of dropped files with related information.
         """
-        self.key = "dropped"
         dropped_files = []
 
         for dir_name, dir_names, file_names in os.walk(self.dropped_path):

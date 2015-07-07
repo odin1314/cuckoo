@@ -152,7 +152,7 @@ class RunProcessing(object):
         except:
             log.exception("Failed to load the processing module "
                           "\"{0}\":".format(module))
-            return None, None
+            return
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
@@ -164,11 +164,11 @@ class RunProcessing(object):
         except CuckooOperationalError:
             log.debug("Processing module %s not found in configuration file",
                       module_name)
-            return None, None
+            return
 
         # If the processing module is disabled in the config, skip it.
         if not options.enabled:
-            return None, None
+            return
 
         # Give it path to the analysis results.
         current.set_path(self.analysis_path)
@@ -188,7 +188,7 @@ class RunProcessing(object):
                       "\"%s\"", current.__class__.__name__, self.analysis_path)
 
             # If succeeded, return they module's key name and the data.
-            return current.key, data
+            return data
         except CuckooDependencyError as e:
             log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooProcessingError as e:
@@ -198,7 +198,7 @@ class RunProcessing(object):
             log.exception("Failed to run the processing module \"%s\" for task #%d:",
                           current.__class__.__name__, self.task["id"])
 
-        return None, None
+        return
 
     def run(self):
         """Run all processing modules and all signatures.
@@ -223,11 +223,11 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
-                key, result = self.process(module, results)
+                result = self.process(module, results)
 
                 # If the module provided results, append it to the fat dict.
-                if key and result:
-                    results[key] = result
+                if result:
+                    results[module.key] = result
         else:
             log.info("No processing modules loaded")
 

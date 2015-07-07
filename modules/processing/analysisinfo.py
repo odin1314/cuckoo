@@ -14,14 +14,13 @@ log = logging.getLogger(__name__)
 
 class AnalysisInfo(Processing):
     """General information about analysis session."""
+    key = "info"
 
     def run(self):
         """Run information gathering.
         @return: information dict.
         """
-        self.key = "info"
-
-        if not "started_on" in self.task:
+        if "started_on" not in self.task:
             return dict(
                 version=CUCKOO_VERSION,
                 started="none",

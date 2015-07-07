@@ -11,12 +11,12 @@ from lib.cuckoo.core.database import Database
 
 class Debug(Processing):
     """Analysis debug information."""
+    key = "debug"
 
     def run(self):
         """Run debug analysis.
         @return: debug information dict.
         """
-        self.key = "debug"
         debug = {"log": "", "errors": []}
 
         if os.path.exists(self.log_path):

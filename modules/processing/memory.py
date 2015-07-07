@@ -946,13 +946,12 @@ class VolatilityManager(object):
 
 class Memory(Processing):
     """Volatility Analyzer."""
+    key = "memory"
 
     def run(self):
         """Run analysis.
         @return: volatility results dict.
         """
-        self.key = "memory"
-
         results = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):

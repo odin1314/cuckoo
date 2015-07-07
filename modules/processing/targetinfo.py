@@ -9,6 +9,7 @@ from lib.cuckoo.common.objects import File
 
 class TargetInfo(Processing):
     """General information about a file."""
+    key = "target"
 
     def run(self):
         """Run file information gathering.

@@ -10,12 +10,12 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 class ProcessMemory(Processing):
     """Analyze process memory dumps."""
+    key = "procmemory"
 
     def run(self):
         """Run analysis.
         @return: structured results.
         """
-        self.key = "procmemory"
         results = []
 
         if os.path.exists(self.pmemory_path):

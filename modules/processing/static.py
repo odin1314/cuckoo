@@ -269,12 +269,12 @@ class PortableExecutable:
 
 class Static(Processing):
     """Static analysis."""
-    
+    key = "static"
+
     def run(self):
         """Run analysis.
         @return: results dict.
         """
-        self.key = "static"
         static = {}
 
         if HAVE_PEFILE:
