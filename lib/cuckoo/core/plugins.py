@@ -490,12 +490,12 @@ class RunSignatures(object):
                 else:
                     if result is True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
-                        matched.append(sig.as_result())
+                        self.matched.append(sig.as_result())
                         if sig in complete_list:
                             complete_list.remove(sig)
 
         # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = matched
+        self.results["signatures"] = self.matched
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
@@ -506,10 +506,10 @@ class RunSignatures(object):
                 match = self.process(signature)
                 # If the signature is matched, add it to the list.
                 if match:
-                    matched.append(match)
+                    self.matched.append(match)
 
         # Sort the matched signatures by their severity level.
-        matched.sort(key=lambda key: key["severity"])
+        self.matched.sort(key=lambda key: key["severity"])
 
 class RunReporting:
     """Reporting Engine.

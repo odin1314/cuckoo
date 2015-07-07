@@ -685,7 +685,6 @@ class SignatureFlags(object):
             res = [item for item in res if item["timestamp"] >= after]
         return res
 
-
 class Signature(object):
     """Base class for Cuckoo signatures."""
 
@@ -700,6 +699,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    order = 1
 
     filter_processnames = set()
     filter_apinames = set()
