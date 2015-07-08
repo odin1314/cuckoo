@@ -2,12 +2,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import logging
 import datetime
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
-from lib.cuckoo.common.utils import convert_to_printable, logtime, cleanup_value
 from lib.cuckoo.common.netlog import BsonParser
 
 log = logging.getLogger(__name__)
@@ -224,22 +222,11 @@ class MonitorProcessLog(list):
         self.first_seen = None
 
     def __iter__(self):
-        call_id = 0
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
             elif event["type"] == "call":
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
-
-                # backwards compat with previous reports, remove if not necessary
-                # event["repeated"] = 0
-                # event["timestamp"] = logtime(event.pop("time"))
-                # event["arguments"] = [dict(name=i, value=j) for i,j in event["arguments"].iteritems()]
-                # event["return"] = convert_to_printable(cleanup_value(event.pop("return_value")))
-
-                # event["is_success"] = bool(int(event.pop("status")))
-                # event["id"] = call_id
-                # call_id += 1
 
                 del event["type"]
                 yield event
@@ -249,7 +236,6 @@ class MonitorProcessLog(list):
 
 class WindowsMonitor(BehaviorHandler):
     """Parses cuckoomon/monitor generated logs."""
-
     key = "platform"
 
     def __init__(self, *args, **kwargs):
@@ -280,7 +266,8 @@ class WindowsMonitor(BehaviorHandler):
             yield event
 
     def run(self):
-        if not self.matched: return False
+        if not self.matched:
+            return
 
         self.results["processes"].sort(key=lambda process: process["first_seen"])
         return self.results
