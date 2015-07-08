@@ -7,162 +7,12 @@ import logging
 
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.utils import ThreadSingleton, subdict
-from .platform.windows import WindowsMonitor
+from lib.cuckoo.common.utils import subdict
+from .platform.windows import WindowsMonitor, WindowsBehaviorSummary
+from .platform.windows import WindowsApiStats
 from .platform.linux import LinuxSystemTap
 
 log = logging.getLogger(__name__)
-
-def fix_key(key):
-    """Fix a registry key to have it normalized.
-    @param key: raw key
-    @returns: normalized key
-    """
-    res = key
-    if key.lower().startswith("registry\\machine\\"):
-        res = "HKEY_LOCAL_MACHINE\\" + key[17:]
-    elif key.lower().startswith("registry\\user\\"):
-        res = "HKEY_USERS\\" + key[14:]
-    elif key.lower().startswith("\\registry\\machine\\"):
-        res = "HKEY_LOCAL_MACHINE\\" + key[18:]
-    elif key.lower().startswith("\\registry\\user\\"):
-        res = "HKEY_USERS\\" + key[15:]
-
-    return res
-
-class Summary(BehaviorHandler):
-    """Generates summary information."""
-
-    key = "summary"
-    event_types = ["apicall"]
-
-    def __init__(self, *args, **kwargs):
-        super(Summary, self).__init__(*args, **kwargs)
-
-        self.keys = []
-        self.mutexes = []
-        self.files = []
-        self.handles = []
-
-    def _check_registry(self, registry, subkey, handle):
-        for known_handle in self.handles:
-            if handle != 0 and handle == known_handle["handle"]:
-                return None
-
-        name = ""
-
-        if registry == 0x80000000:
-            name = "HKEY_CLASSES_ROOT\\"
-        elif registry == 0x80000001:
-            name = "HKEY_CURRENT_USER\\"
-        elif registry == 0x80000002:
-            name = "HKEY_LOCAL_MACHINE\\"
-        elif registry == 0x80000003:
-            name = "HKEY_USERS\\"
-        elif registry == 0x80000004:
-            name = "HKEY_PERFORMANCE_DATA\\"
-        elif registry == 0x80000005:
-            name = "HKEY_CURRENT_CONFIG\\"
-        elif registry == 0x80000006:
-            name = "HKEY_DYN_DATA\\"
-        else:
-            for known_handle in self.handles:
-                if registry == known_handle["handle"]:
-                    name = known_handle["name"] + "\\"
-
-        key = fix_key(name + subkey)
-        self.handles.append({"handle": handle, "name": key})
-        return key
-
-    def handle_event(self, call):
-        """Generate processes list from streamed calls/processes.
-        @return: None.
-        """
-
-        if call["api"].startswith("RegOpenKeyEx") or call["api"].startswith("RegCreateKeyEx"):
-            registry = 0
-            subkey = ""
-            handle = 0
-
-            for argument in call["arguments"]:
-                if argument["name"] == "Registry":
-                    registry = int(argument["value"], 16)
-                elif argument["name"] == "SubKey":
-                    subkey = argument["value"]
-                elif argument["name"] == "Handle":
-                    handle = int(argument["value"], 16)
-
-            name = self._check_registry(registry, subkey, handle)
-            if name and name not in self.keys:
-                self.keys.append(name)
-        elif call["api"].startswith("NtOpenKey"):
-            registry = -1
-            subkey = ""
-            handle = 0
-
-            for argument in call["arguments"]:
-                if argument["name"] == "ObjectAttributes":
-                    subkey = argument["value"]
-                elif argument["name"] == "KeyHandle":
-                    handle = int(argument["value"], 16)
-
-            name = self._check_registry(registry, subkey, handle)
-            if name and name not in self.keys:
-                self.keys.append(name)
-        elif call["api"].startswith("NtDeleteValueKey"):
-            registry = -1
-            subkey = ""
-            handle = 0
-
-            for argument in call["arguments"]:
-                if argument["name"] == "ValueName":
-                    subkey = argument["value"]
-                elif argument["name"] == "KeyHandle":
-                    handle = int(argument["value"], 16)
-
-            name = self._check_registry(registry, subkey, handle)
-            if name and name not in self.keys:
-                self.keys.append(name)
-        elif call["api"].startswith("RegCloseKey"):
-            handle = 0
-
-            for argument in call["arguments"]:
-                if argument["name"] == "Handle":
-                    handle = int(argument["value"], 16)
-
-            if handle != 0:
-                for a in self.handles:
-                    if a["handle"] == handle:
-                        try:
-                            self.handles.remove(a)
-                        except ValueError:
-                            pass
-
-        elif call["category"] == "filesystem":
-            for argument in call["arguments"]:
-                if argument["name"] == "FileName":
-                    value = argument["value"].strip()
-                    if not value:
-                        continue
-
-                    if value not in self.files:
-                        self.files.append(value)
-
-        elif call["category"] == "synchronization":
-            for argument in call["arguments"]:
-                if argument["name"] == "MutexName":
-                    value = argument["value"].strip()
-                    if not value:
-                        continue
-
-                    if value not in self.mutexes:
-                        self.mutexes.append(value)
-
-    def run(self):
-        """Get registry keys, mutexes and files.
-        @return: Summary of keys, mutexes and files.
-        """
-        return {"files": self.files, "keys": self.keys, "mutexes": self.mutexes}
 
 class Anomaly(BehaviorHandler):
     """Anomaly detected during analysis.
@@ -381,6 +231,8 @@ class BehaviorAnalysis(Processing):
             Summary(self),
             Anomaly(self),
             WindowsMonitor(self),
+            WindowsApiStats(self),
+            WindowsBehaviorSummary(self),
             LinuxSystemTap(self),
         ]
 
