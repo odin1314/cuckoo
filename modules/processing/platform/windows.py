@@ -235,7 +235,7 @@ class MonitorProcessLog(list):
         return True
 
 class WindowsMonitor(BehaviorHandler):
-    """Parses cuckoomon/monitor generated logs."""
+    """Parses monitor generated logs."""
     key = "platform"
 
     def __init__(self, *args, **kwargs):
