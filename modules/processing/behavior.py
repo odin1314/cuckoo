@@ -9,7 +9,7 @@ from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.utils import subdict
 from .platform.windows import WindowsMonitor, WindowsBehaviorSummary
-from .platform.windows import WindowsApiStats
+from .platform.windows import WindowsApiStats, WindowsProcesses
 from .platform.linux import LinuxSystemTap
 
 log = logging.getLogger(__name__)
@@ -232,6 +232,7 @@ class BehaviorAnalysis(Processing):
             # Processes(self),
             Anomaly(self),
             WindowsMonitor(self),
+            WindowsProcesses(self),
             WindowsApiStats(self),
             WindowsBehaviorSummary(self),
             LinuxSystemTap(self),

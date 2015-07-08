@@ -236,9 +236,35 @@ class MonitorProcessLog(list):
         generated list of API calls would be seen as empty."""
         return True
 
+class WindowsProcesses(BehaviorHandler):
+    """Represents the processes logged by the monitor."""
+    key = "processes"
+
+    def __init__(self, *args, **kwargs):
+        super(WindowsProcesses, self).__init__(*args, **kwargs)
+        self.processes = {}
+
+    def handles_path(self, path):
+        return path.endswith(".bson")
+
+    def parse(self, path):
+        # Invoke parsing of current log file.
+        parser = BsonParser(open(path, "rb"))
+
+        for event in parser:
+            if event["type"] == "process":
+                pid = "%d" % event["pid"]
+                self.processes[pid] = MonitorProcessLog(parser)
+
+            yield event
+
+    def run(self):
+        return self.processes
+
 class WindowsMonitor(BehaviorHandler):
     """Parses monitor generated logs."""
     key = "platform"
+    event_types = ["process"]
 
     def __init__(self, *args, **kwargs):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
@@ -253,19 +279,10 @@ class WindowsMonitor(BehaviorHandler):
     def handles_path(self, path):
         if path.endswith(".bson"):
             self.matched = True
-            return True
+            return False
 
-    def parse(self, path):
-        # Invoke parsing of current log file.
-        parser = BsonParser(open(path, "rb"))
-
-        for event in parser:
-            if event["type"] == "process":
-                process = dict(event)
-                process["calls"] = MonitorProcessLog(parser)
-                self.results["processes"].append(process)
-
-            yield event
+    def handle_process_event(self, event):
+        self.results["processes"].append(event)
 
     def run(self):
         if not self.matched:
