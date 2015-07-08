@@ -133,8 +133,8 @@ class BsonParser(object):
 
             parsed = {
                 "type": mtype,
-                "thread_id": tid,
-                "time": time, 
+                "tid": tid,
+                "time": time,
             }
 
             if mtype == "debug":
@@ -163,25 +163,10 @@ class BsonParser(object):
                 # Special new process message from cuckoomon.
                 if apiname == "__process__":
                     parsed["type"] = "process"
-                    
-                    if "TimeLow" in argdict:
-                        timelow = argdict["TimeLow"]
-                        timehigh = argdict["TimeHigh"]
 
-                        parsed["process_identifier"] = pid = argdict["ProcessIdentifier"]
-                        parsed["parent_process_identifier"] = ppid = argdict["ParentProcessIdentifier"]
-                        modulepath = argdict["ModulePath"]
-
-                    elif "time_low" in argdict:
-                        timelow = argdict["time_low"]
-                        timehigh = argdict["time_high"]
-
-                        parsed["process_identifier"] = pid = argdict["process_identifier"]
-                        parsed["parent_process_identifier"] = ppid = argdict["parent_process_identifier"]
-                        modulepath = argdict["module_path"]
-
-                    else:
-                        raise CuckooResultError("I don't recognise the bson log contents.")
+                    timelow = argdict["time_low"]
+                    timehigh = argdict["time_high"]
+                    modulepath = argdict["module_path"]
 
                     # FILETIME is 100-nanoseconds from 1601 :/
                     vmtimeunix = (timelow + (timehigh << 32))
@@ -191,9 +176,8 @@ class BsonParser(object):
 
                     procname = get_filename_from_path(modulepath)
                     parsed["process_name"] = procname
-
-                elif apiname == "__thread__":
-                    parsed["process_identifier"] = pid = argdict["ProcessIdentifier"]
+                    parsed["pid"] = argdict["pid"]
+                    parsed["ppid"] = argdict["ppid"]
 
                 # elif apiname == "__anomaly__":
                     # tid = argdict["ThreadIdentifier"]

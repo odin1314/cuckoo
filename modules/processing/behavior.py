@@ -192,8 +192,8 @@ class Anomaly(BehaviorHandler):
                 message = row["value"]
 
         self.anomalies.append(dict(
-            name=process["process_name"],
-            pid=process["process_id"],
+            # name=process["process_name"],
+            # pid=process["process_id"],
             category=category,
             funcname=funcname,
             message=message,
@@ -214,19 +214,19 @@ class ProcessTree(BehaviorHandler):
         self.processes = {}
 
     def handle_event(self, process):
-        if process["process_identifier"] in self.processes:
+        if process["pid"] in self.processes:
             return
 
-        pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
+        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
         pcopy["children"] = []
 
-        self.processes[process["process_identifier"]] = pcopy
+        self.processes[process["pid"]] = pcopy
 
     def run(self):
         root = {"children": []}
 
         for p in self.processes.values():
-            self.processes.get(p["parent_process_identifier"], root)["children"].append(p)
+            self.processes.get(p["ppid"], root)["children"].append(p)
 
         return root["children"]
 
@@ -241,12 +241,11 @@ class Processes(BehaviorHandler):
         self.processes = {}
 
     def handle_event(self, process):
-        if process["process_identifier"] in self.processes:
+        if process["pid"] in self.processes:
             return
 
-        pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
-
-        self.processes[process["process_identifier"]] = pcopy
+        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
+        self.processes[process["pid"]] = pcopy
 
     def run(self):
         return self.processes.values()
@@ -264,20 +263,20 @@ class GenericBehavior(BehaviorHandler):
     def handle_event(self, event):
         if event["type"] == "process":
             process = event
-            if process["process_identifier"] in self.processes:
+            if process["pid"] in self.processes:
                 return
 
-            pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
+            pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
             pcopy["summary"] = {}
 
-            self.processes[process["process_identifier"]] = pcopy
+            self.processes[process["pid"]] = pcopy
 
         elif event["type"] == "generic":
-            if event["process_identifier"] in self.processes:
+            if event["pid"] in self.processes:
                 # TODO: rewrite / generalize / more flexible
-                self.processes[event["process_identifier"]]["summary"][event["category"]].append(event["value"])
+                self.processes[event["pid"]]["summary"][event["category"]].append(event["value"])
             else:
-                log.warning("Generic event for unknown process id %u", event["process_identifier"])
+                log.warning("Generic event for unknown process id %u", event["pid"])
 
     def run(self):
         return self.processes.values()
@@ -297,12 +296,15 @@ class BehaviorAnalysis(Processing):
         "generic": {
             "processes": [
                 {
-                    "process_identifier": x,
-                    "parent_process_identifier": y,
+                    "pid": x,
+                    "ppid": y,
                     "calls": [
                         {
                             "function": "foo",
-                            "arguments": [("a": 1), ("b": 2)],
+                            "arguments": {
+                                "a": 1,
+                                "b": 2,
+                            },
                         },
                         ...
                     ]

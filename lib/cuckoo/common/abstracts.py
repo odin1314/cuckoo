@@ -1118,7 +1118,7 @@ class Signature(object):
         if process:
             process_summary = {
                 "process_name": process["process_name"],
-                "process_id": process["process_id"],
+                "pid": process["pid"],
             }
 
         self.data.append({"process": process_summary, "signs": signs})

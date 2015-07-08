@@ -224,8 +224,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                           str(self.client_address))
 
     def open_process_log(self, event):
-        pid = event["process_identifier"]
-        ppid = event["parent_process_identifier"]
+        pid = event["pid"]
+        ppid = event["ppid"]
         procname = event["process_name"]
 
         if self.pid is not None:
