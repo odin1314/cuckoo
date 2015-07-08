@@ -600,7 +600,6 @@ class Processing(object):
         self.logs_path = ""
         self.task = None
         self.options = None
-        self.key = None
         self.results = {}
 
     def set_options(self, options):
