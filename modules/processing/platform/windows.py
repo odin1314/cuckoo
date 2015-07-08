@@ -232,6 +232,8 @@ class MonitorProcessLog(list):
                 yield event
 
     def __nonzero__(self):
+        """Required for the JSON reporting module as otherwise the on-demand
+        generated list of API calls would be seen as empty."""
         return True
 
 class WindowsMonitor(BehaviorHandler):
@@ -242,7 +244,7 @@ class WindowsMonitor(BehaviorHandler):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
         self.results = {
             "name": "windows",
-            "architecture": "unknown", # look this up in the task / vm info?
+            "architecture": "unknown",
             "source": ["monitor", "windows"],
             "processes": [],
         }

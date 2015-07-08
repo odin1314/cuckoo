@@ -264,18 +264,20 @@ class BehaviorAnalysis(Processing):
                 elif h.handle_event not in interest_map[event_type]:
                     interest_map[event_type].append(h.handle_event)
 
-        # for loop onion, the more layers the better? \o/
-        # for every log file...
+        # Each log file should be parsed by one of the handlers. This handler
+        # then yields every event in it which are forwarded to the various
+        # behavior/analysis/etc handlers.
         for path in self._enum_logs():
-            # ... ask every handler...
             for handler in handlers:
-                # ... whether it is responsible
-                if handler.handles_path(path):
-                    # ... and then let it parse the file
-                    for event in handler.parse(path):
-                        # pass down the parsed message to interested handlers
-                        for hhandler in interest_map.get(event["type"], []):
-                            hhandler(event)
+                # Is this handler supposed to parse this file?
+                if not handler.handles_path(path):
+                    continue
+
+                # Actually parse and iterate through the file.
+                for event in handler.parse(path):
+                    # Forward each event to the interested handlers.
+                    for hhandler in interest_map.get(event["type"], []):
+                        hhandler(event)
 
         behavior = {}
 
