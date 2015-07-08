@@ -190,7 +190,7 @@ class BsonParser(object):
                     # return True
 
                 else:
-                    parsed["type"] = "call"
+                    parsed["type"] = "apicall"
                     parsed["api"] = apiname
                     parsed["category"] = category
                     parsed["status"] = argdict.pop("is_success", 1)

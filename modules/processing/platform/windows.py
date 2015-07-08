@@ -16,7 +16,7 @@ def NT_SUCCESS(value):
 class WindowsBehaviorSummary(BehaviorHandler):
     """Constructs a summary of the behavior API logs."""
     key = "summary"
-    event_types = ["call"]
+    event_types = ["apicall"]
 
     def __init__(self, *args, **kwargs):
         super(WindowsBehaviorSummary, self).__init__(*args, **kwargs)
@@ -198,7 +198,7 @@ class WindowsBehaviorSummary(BehaviorHandler):
 class WindowsApiStats(BehaviorHandler):
     """Collects API statistics."""
     key = "apistats"
-    event_types = ["process", "call"]
+    event_types = ["process", "apicall"]
 
     def __init__(self, *args, **kwargs):
         super(WindowsApiStats, self).__init__(*args, **kwargs)
@@ -209,7 +209,7 @@ class WindowsApiStats(BehaviorHandler):
         pid = "%d" % process["pid"]
         self.curstats = self.apistats[pid] = {}
 
-    def handle_call_event(self, call):
+    def handle_apicall_event(self, call):
         apiname = call["api"]
         self.curstats[apiname] = self.curstats.get(apiname, 0) + 1
 
@@ -225,7 +225,7 @@ class MonitorProcessLog(list):
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
-            elif event["type"] == "call":
+            elif event["type"] == "apicall":
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
 
                 del event["type"]
