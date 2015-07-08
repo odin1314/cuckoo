@@ -207,13 +207,13 @@ class WindowsApiStats(BehaviorHandler):
         self.apistats = {}
         self.curstats = None
 
-    def handle_event(self, event):
-        if event["type"] == "process":
-            pid = "%d" % event["pid"]
-            self.curstats = self.apistats[pid] = {}
-        else:
-            apiname = event["api"]
-            self.curstats[apiname] = self.curstats.get(apiname, 0) + 1
+    def handle_process_event(self, process):
+        pid = "%d" % process["pid"]
+        self.curstats = self.apistats[pid] = {}
+
+    def handle_call_event(self, call):
+        apiname = call["api"]
+        self.curstats[apiname] = self.curstats.get(apiname, 0) + 1
 
     def run(self):
         return self.apistats

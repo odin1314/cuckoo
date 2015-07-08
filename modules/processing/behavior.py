@@ -252,10 +252,16 @@ class BehaviorAnalysis(Processing):
         interest_map = {}
         for h in handlers:
             for event_type in h.event_types:
-                if not event_type in interest_map: interest_map[event_type] = []
-                interest_map[event_type].append(h)
+                if event_type not in interest_map:
+                    interest_map[event_type] = []
 
-        ### PARTY
+                # If available go for the specific event type handler rather
+                # than the generic handle_event.
+                if hasattr(h, "handle_%s_event" % event_type):
+                    fn = getattr(h, "handle_%s_event" % event_type)
+                    interest_map[event_type].append(fn)
+                elif h.handle_event not in interest_map[event_type]:
+                    interest_map[event_type].append(h.handle_event)
 
         # for loop onion, the more layers the better? \o/
         # for every log file...
@@ -267,10 +273,8 @@ class BehaviorAnalysis(Processing):
                     # ... and then let it parse the file
                     for event in handler.parse(path):
                         # pass down the parsed message to interested handlers
-                        for ihandler in interest_map.get(event["type"], []):
-                            ihandler.handle_event(event)
-
-        ### END OF PARTY
+                        for hhandler in interest_map.get(event["type"], []):
+                            hhandler(event)
 
         behavior = {}
 
